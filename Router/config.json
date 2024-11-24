@@ -1,0 +1,12 @@
+{
+    "default_app": "file:///Applications/Safari.app",
+    "rules": [
+        {
+            "app": "file:///Applications/Firefox.app",
+            "patterns": [
+                ".*bitbucket.*",
+                ".*google.*"
+            ]
+        }
+    ]
+}
