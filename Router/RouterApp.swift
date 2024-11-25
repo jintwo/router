@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import OSLog
 
 class Delegate: NSObject, NSApplicationDelegate, ObservableObject {
     public var config: Config?
-    
+    public var logger: Logger?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSAppleEventManager
             .shared()
@@ -22,26 +24,28 @@ class Delegate: NSObject, NSApplicationDelegate, ObservableObject {
     func matchURL(url: URL) -> URL {
         for rule in config!.rules {
             for pattern in rule.patterns {
-                NSLog("pattern: \(pattern)")
+                self.logger!.info("pattern: \(pattern)")
                 let pat = try! Regex(pattern)
                 let strURL = url.absoluteString
                 if strURL.contains(pat) {
-                    NSLog("matched app: \(rule.app)")
+                    self.logger!.info("matched app: \(rule.app)")
                     return URL(string: rule.app)!
                 }
             }
         }
-        NSLog("default app: \(config!.default_app)")
-        return URL(string: config!.default_app)!
+        self.logger!.info("default app: \(self.config!.default_app)")
+        return URL(string: self.config!.default_app)!
     }
     
     @objc func handleURL(event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
         if let path = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue?.removingPercentEncoding {
             let url = URL(string: path)!
             let appURL = matchURL(url: url)
+            let openConf = NSWorkspace.OpenConfiguration()
+            openConf.activates = true
             NSWorkspace.shared.open([url],
                                     withApplicationAt: appURL,
-                                    configuration: NSWorkspace.OpenConfiguration())
+                                    configuration: openConf)
         }
     }
 }
@@ -56,7 +60,7 @@ struct Rule : Codable {
     let patterns: [String]
 }
 
-func loadBundledConfig() -> Config? {
+func loadBundledConfig(_ logger: Logger) -> Config? {
     guard let url = Bundle.main.url(forResource: "config", withExtension: "json"),
           let data = try? Data(contentsOf: url) else {
         return nil
@@ -65,23 +69,28 @@ func loadBundledConfig() -> Config? {
     do {
         return try JSONDecoder().decode(Config.self, from: data)
     } catch {
-        NSLog("error: \(error)")
+        logger.error("error: \(error)")
         return nil
     }
 }
 
-func loadUserConfig() -> Config? {
-    let dir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false);
+func loadUserConfig(_ logger: Logger) -> Config? {
+    let dir = try? FileManager.default.url(for: .documentDirectory,
+                                           in: .userDomainMask,
+                                           appropriateFor: nil,
+                                           create: false);
+    logger.info("trying to find config at path: \(dir!)")
+    let url = dir?.appendingPathComponent("router").appendingPathExtension("json")
     
-    guard let url = dir?.appendingPathComponent("router").appendingPathExtension("json") ,
-          let data = try? Data(contentsOf: url) else {
+    guard let data = try? Data(contentsOf: url!) else {
+        logger.info("file at \(url!) not found")
         return nil
     }
     
     do {
         return try JSONDecoder().decode(Config.self, from: data)
     } catch {
-        NSLog("error: \(error)")
+        logger.error("error: \(error)")
         return nil
     }
 }
@@ -90,24 +99,27 @@ func loadUserConfig() -> Config? {
 @main
 struct RouterApp: App {
     @NSApplicationDelegateAdaptor private var appDelegate: Delegate
-            
-    func reloadConfig() {
-        if let cfg = loadUserConfig() {
-            NSLog("using ~/router")
+    private var logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!,
+                                        category: "logging")
+    
+    func reloadConfig(_ logger: Logger) {
+        if let cfg = loadUserConfig(logger) {
+            logger.info("using ~/router")
             appDelegate.config = cfg
         } else {
-            NSLog("using bundled config")
-            appDelegate.config = loadBundledConfig()
+            logger.info("using bundled config")
+            appDelegate.config = loadBundledConfig(logger)
         }
     }
     
     init() {
-        reloadConfig()
+        reloadConfig(self.logger)
+        appDelegate.logger = logger
     }
     
     var body: some Scene {
         MenuBarExtra("Router", systemImage: "arrow.branch") {
-            Button("Reload") { reloadConfig() }
+            Button("Reload") { reloadConfig(logger) }
                 .keyboardShortcut("R")
             Divider()
             Button("Quit") { NSApplication.shared.terminate(nil) }

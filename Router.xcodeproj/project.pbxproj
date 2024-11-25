@@ -11,6 +11,7 @@
 		3C4C32D12CEEA7180064E883 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C4C32D02CEEA7180064E883 /* Assets.xcassets */; };
 		3C6FB9A72CF332ED00D33A1D /* config.json in Resources */ = {isa = PBXBuildFile; fileRef = 3C6FB9A62CF332E700D33A1D /* config.json */; };
 		3C7D1C472CF35D1C0044233A /* router.png in Resources */ = {isa = PBXBuildFile; fileRef = 3C7D1C462CF35D1C0044233A /* router.png */; };
+		3C8E74CA2CF4237000317175 /* OSLog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8E74C92CF4237000317175 /* OSLog.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		3C4C32D52CEEA7180064E883 /* Router.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Router.entitlements; sourceTree = "<group>"; };
 		3C6FB9A62CF332E700D33A1D /* config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = config.json; sourceTree = "<group>"; };
 		3C7D1C462CF35D1C0044233A /* router.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = router.png; sourceTree = "<group>"; };
+		3C8E74C92CF4237000317175 /* OSLog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OSLog.framework; path = System/Library/Frameworks/OSLog.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C8E74CA2CF4237000317175 /* OSLog.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,6 +41,7 @@
 			isa = PBXGroup;
 			children = (
 				3C4C32CB2CEEA7170064E883 /* Router */,
+				3C8E74C82CF4237000317175 /* Frameworks */,
 				3C4C32CA2CEEA7170064E883 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,6 +65,14 @@
 				3C4C32D52CEEA7180064E883 /* Router.entitlements */,
 			);
 			path = Router;
+			sourceTree = "<group>";
+		};
+		3C8E74C82CF4237000317175 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3C8E74C92CF4237000317175 /* OSLog.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
