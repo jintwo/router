@@ -10,7 +10,6 @@
 		3C4C32CD2CEEA7170064E883 /* RouterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4C32CC2CEEA7170064E883 /* RouterApp.swift */; };
 		3C4C32D12CEEA7180064E883 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C4C32D02CEEA7180064E883 /* Assets.xcassets */; };
 		3C6FB9A72CF332ED00D33A1D /* config.json in Resources */ = {isa = PBXBuildFile; fileRef = 3C6FB9A62CF332E700D33A1D /* config.json */; };
-		3C7D1C472CF35D1C0044233A /* router.png in Resources */ = {isa = PBXBuildFile; fileRef = 3C7D1C462CF35D1C0044233A /* router.png */; };
 		3C8E74CA2CF4237000317175 /* OSLog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8E74C92CF4237000317175 /* OSLog.framework */; };
 /* End PBXBuildFile section */
 
@@ -21,7 +20,6 @@
 		3C4C32D02CEEA7180064E883 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3C4C32D52CEEA7180064E883 /* Router.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Router.entitlements; sourceTree = "<group>"; };
 		3C6FB9A62CF332E700D33A1D /* config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = config.json; sourceTree = "<group>"; };
-		3C7D1C462CF35D1C0044233A /* router.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = router.png; sourceTree = "<group>"; };
 		3C8E74C92CF4237000317175 /* OSLog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OSLog.framework; path = System/Library/Frameworks/OSLog.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -61,7 +59,6 @@
 				3C2074712CF31F8C0070D2A2 /* Info.plist */,
 				3C4C32CC2CEEA7170064E883 /* RouterApp.swift */,
 				3C4C32D02CEEA7180064E883 /* Assets.xcassets */,
-				3C7D1C462CF35D1C0044233A /* router.png */,
 				3C4C32D52CEEA7180064E883 /* Router.entitlements */,
 			);
 			path = Router;
@@ -134,7 +131,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C4C32D12CEEA7180064E883 /* Assets.xcassets in Resources */,
-				3C7D1C472CF35D1C0044233A /* router.png in Resources */,
 				3C6FB9A72CF332ED00D33A1D /* config.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
