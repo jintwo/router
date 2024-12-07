@@ -4,8 +4,8 @@
         {
             "app": "file:///Applications/Firefox.app",
             "patterns": [
-                ".*bitbucket.*",
-                ".*google.*"
+                {"value": ".*bitbucket.*"},
+                {"value": ".*google.*"}
             ]
         }
     ]

@@ -10,6 +10,8 @@
 		3C4C32CD2CEEA7170064E883 /* RouterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4C32CC2CEEA7170064E883 /* RouterApp.swift */; };
 		3C4C32D12CEEA7180064E883 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C4C32D02CEEA7180064E883 /* Assets.xcassets */; };
 		3C6FB9A72CF332ED00D33A1D /* config.json in Resources */ = {isa = PBXBuildFile; fileRef = 3C6FB9A62CF332E700D33A1D /* config.json */; };
+		3C748EFF2CF712EF00E9D444 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C748EFE2CF712EA00E9D444 /* Model.swift */; };
+		3C748F012CF7139D00E9D444 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C748F002CF7139C00E9D444 /* View.swift */; };
 		3C8E74CA2CF4237000317175 /* OSLog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8E74C92CF4237000317175 /* OSLog.framework */; };
 /* End PBXBuildFile section */
 
@@ -20,6 +22,8 @@
 		3C4C32D02CEEA7180064E883 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3C4C32D52CEEA7180064E883 /* Router.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Router.entitlements; sourceTree = "<group>"; };
 		3C6FB9A62CF332E700D33A1D /* config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = config.json; sourceTree = "<group>"; };
+		3C748EFE2CF712EA00E9D444 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		3C748F002CF7139C00E9D444 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		3C8E74C92CF4237000317175 /* OSLog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OSLog.framework; path = System/Library/Frameworks/OSLog.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -55,6 +59,8 @@
 		3C4C32CB2CEEA7170064E883 /* Router */ = {
 			isa = PBXGroup;
 			children = (
+				3C748F002CF7139C00E9D444 /* View.swift */,
+				3C748EFE2CF712EA00E9D444 /* Model.swift */,
 				3C6FB9A62CF332E700D33A1D /* config.json */,
 				3C2074712CF31F8C0070D2A2 /* Info.plist */,
 				3C4C32CC2CEEA7170064E883 /* RouterApp.swift */,
@@ -143,6 +149,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C4C32CD2CEEA7170064E883 /* RouterApp.swift in Sources */,
+				3C748EFF2CF712EF00E9D444 /* Model.swift in Sources */,
+				3C748F012CF7139D00E9D444 /* View.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -296,6 +304,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = jintwo.Router;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -329,6 +338,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = jintwo.Router;
 				PRODUCT_NAME = "$(TARGET_NAME)";
