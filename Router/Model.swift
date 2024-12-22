@@ -25,41 +25,6 @@ class Config : Codable {
     static func empty() -> Config {
         return Config(default_app: "", rules: [])
     }
-    
-    static func loadBundledConfig(_ logger: Logger) -> Config {
-        guard let url = Bundle.main.url(forResource: "config", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
-            return Config.empty()
-        }
-        
-        do {
-            return try JSONDecoder().decode(Config.self, from: data)
-        } catch {
-            logger.error("error: \(error)")
-            return Config.empty()
-        }
-    }
-    
-    static func loadUserConfig(_ logger: Logger) -> Config {
-        let dir = try? FileManager.default.url(for: .documentDirectory,
-                                               in: .userDomainMask,
-                                               appropriateFor: nil,
-                                               create: false);
-        logger.info("trying to find config at path: \(dir!)")
-        let url = dir?.appendingPathComponent("router").appendingPathExtension("json")
-        
-        guard let data = try? Data(contentsOf: url!) else {
-            logger.info("file at \(url!) not found")
-            return Config.empty()
-        }
-        
-        do {
-            return try JSONDecoder().decode(Config.self, from: data)
-        } catch {
-            logger.error("error: \(error)")
-            return Config.empty()
-        }
-    }
 }
 
 @Observable
@@ -95,34 +60,74 @@ class Pattern : Codable, Identifiable {
 
 class Model: ObservableObject {
     var config: Config = Config.empty()
-
-    func reloadConfig(_ logger: Logger) {
-        var cfg = Config.loadUserConfig(logger)
-        if cfg.isEmpty {
-            cfg = Config.loadBundledConfig(logger)
+    var configFileURL: URL?
+    var logger: Logger?
+    
+    func loadBundledConfig() -> (Config, URL?) {
+        guard let url = Bundle.main.url(forResource: "config", withExtension: "json"),
+              let data = try? Data(contentsOf: url) else {
+            return (Config.empty(), .none)
         }
-        self.config = cfg
+        
+        do {
+            return (try JSONDecoder().decode(Config.self, from: data), url)
+        } catch {
+            logger!.error("error: \(error)")
+            return (Config.empty(), .none)
+        }
     }
     
-    func dumpConfig(_ logger: Logger) {
-        let data = try! JSONEncoder().encode(config)
-        let val = String(data: data, encoding: .utf8)
-        logger.info("data: \(val!)")
+    func loadUserConfig() -> (Config, URL?) {
+        let dir = try? FileManager.default.url(for: .documentDirectory,
+                                               in: .userDomainMask,
+                                               appropriateFor: nil,
+                                               create: false);
+        logger!.debug("trying to find config at path: \(dir!)")
+        let url = dir?.appendingPathComponent("router").appendingPathExtension("json")
+        
+        guard let data = try? Data(contentsOf: url!) else {
+            logger!.debug("file at \(url!) not found")
+            return (Config.empty(), .none)
+        }
+        
+        do {
+            return (try JSONDecoder().decode(Config.self, from: data), url!)
+        } catch {
+            logger!.error("error: \(error)")
+            return (Config.empty(), .none)
+        }
     }
 
-    func matchURL(_ url: URL, _ logger: Logger) -> URL {
+    func reloadConfig() {
+        var (cfg, url) = loadUserConfig()
+        if cfg.isEmpty {
+            (cfg, url) = loadBundledConfig()
+        }
+        self.config = cfg
+        self.configFileURL = url
+    }
+    
+    func dumpConfig() {
+        let data = try! JSONEncoder().encode(config)
+        let val = String(data: data, encoding: .utf8)
+        logger!.debug("data: \(val!)")
+        FileManager.default.createFile(atPath: self.configFileURL!.path(),
+                                       contents: data)
+    }
+        
+    func matchURL(_ url: URL) -> URL {
         for rule in config.rules {
             for pattern in rule.patterns {
-                logger.info("pattern: \(pattern.value)")
+                logger!.debug("pattern: \(pattern.value)")
                 let pat = try! Regex(pattern.value)
                 let strURL = url.absoluteString
                 if strURL.contains(pat) {
-                    logger.info("matched app: \(rule.app)")
+                    logger!.debug("matched app: \(rule.app)")
                     return URL(string: rule.app)!
                 }
             }
         }
-        logger.info("default app: \(self.config.default_app)")
+        logger!.debug("default app: \(self.config.default_app)")
         return URL(string: self.config.default_app)!
     }
     
@@ -136,7 +141,6 @@ class Model: ObservableObject {
             if let appsURL = fileManager.urls(for: .applicationDirectory, in: domain).first {
                 if let enumerator = fileManager.enumerator(at: appsURL, includingPropertiesForKeys: nil, options: .skipsSubdirectoryDescendants) {
                     while let element = enumerator.nextObject() as? URL {
-                        print("ep: \(element.pathComponents)")
                         if element.pathExtension == "app" && !element.pathComponents.last!.hasPrefix(".") {
                             let name = element.deletingPathExtension().lastPathComponent
                             var path = element.standardizedFileURL.absoluteString

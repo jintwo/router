@@ -9,10 +9,10 @@ import SwiftUI
 import OSLog
 
 class Delegate: NSObject, NSApplicationDelegate, ObservableObject, NSWindowDelegate {
-    public var model: Model = Model()
     public var logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!,
                                        category: "logging")
-
+    public var model: Model?
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSAppleEventManager
             .shared()
@@ -26,7 +26,7 @@ class Delegate: NSObject, NSApplicationDelegate, ObservableObject, NSWindowDeleg
     @objc func handleURL(event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
         if let path = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue?.removingPercentEncoding {
             let url = URL(string: path)!
-            let appURL = model.matchURL(url, self.logger)
+            let appURL = model!.matchURL(url)
             let openConf = NSWorkspace.OpenConfiguration()
             openConf.activates = true
             NSWorkspace.shared.open([url],
@@ -44,8 +44,9 @@ struct RouterApp: App {
 
     init() {
         self.model = Model()
-        self.model.reloadConfig(appDelegate.logger)
+        self.model.logger = self.appDelegate.logger
         self.appDelegate.model = self.model
+        self.model.reloadConfig()
     }
     
     func showConfigWindow() {
@@ -57,9 +58,9 @@ struct RouterApp: App {
                 VStack {
                     Button("Config") { showConfigWindow() }
                         .keyboardShortcut("C")
-                    Button("Reload") { model.reloadConfig(appDelegate.logger) }
+                    Button("Reload") { model.reloadConfig() }
                         .keyboardShortcut("R")
-                    Button("Dump") { model.dumpConfig(appDelegate.logger) }
+                    Button("Dump") { model.dumpConfig() }
                         .keyboardShortcut("D")
                     Divider()
                     Button("Quit") { NSApplication.shared.terminate(nil) }
