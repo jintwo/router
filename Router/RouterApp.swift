@@ -9,7 +9,7 @@ import SwiftUI
 import OSLog
 
 class Delegate: NSObject, NSApplicationDelegate, ObservableObject, NSWindowDelegate {
-    public var config: Config = Config(default_app: "", rules: [])
+    public var model: Model = Model()
     public var logger: Logger = Logger(subsystem: Bundle.main.bundleIdentifier!,
                                        category: "logging")
 
@@ -21,29 +21,12 @@ class Delegate: NSObject, NSApplicationDelegate, ObservableObject, NSWindowDeleg
                              forEventClass: AEEventClass(kInternetEventClass),
                              andEventID: AEEventID(kAEGetURL))
         
-        self.config = reloadConfig()
-    }
-    
-    func matchURL(url: URL) -> URL {
-        for rule in config.rules {
-            for pattern in rule.patterns {
-                self.logger.info("pattern: \(pattern.value)")
-                let pat = try! Regex(pattern.value)
-                let strURL = url.absoluteString
-                if strURL.contains(pat) {
-                    self.logger.info("matched app: \(rule.app)")
-                    return URL(string: rule.app)!
-                }
-            }
-        }
-        self.logger.info("default app: \(self.config.default_app)")
-        return URL(string: self.config.default_app)!
     }
     
     @objc func handleURL(event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
         if let path = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue?.removingPercentEncoding {
             let url = URL(string: path)!
-            let appURL = matchURL(url: url)
+            let appURL = model.matchURL(url, self.logger)
             let openConf = NSWorkspace.OpenConfiguration()
             openConf.activates = true
             NSWorkspace.shared.open([url],
@@ -51,37 +34,22 @@ class Delegate: NSObject, NSApplicationDelegate, ObservableObject, NSWindowDeleg
                                     configuration: openConf)
         }
     }
-    
-    func reloadConfig() -> Config {
-        var cfg = Config.loadUserConfig(self.logger)
-        if cfg.isEmpty {
-            cfg = Config.loadBundledConfig(self.logger)
-            self.config = cfg
-            self.logger.info("using bundled config")
-        } else {
-            self.config = cfg
-            self.logger.info("using ~/router")
-        }
-        
-        return cfg
-    }
 }
 
 @main
 struct RouterApp: App {
     @NSApplicationDelegateAdaptor private var appDelegate: Delegate
     @Environment(\.openWindow) var openWindow
-    @State private var config: Config = Config(default_app: "", rules: [])
+    @State private var model: Model
 
-    func showConfigWindow() {
-        config = appDelegate.reloadConfig()
-        openWindow(id: "settings")
+    init() {
+        self.model = Model()
+        self.model.reloadConfig(appDelegate.logger)
+        self.appDelegate.model = self.model
     }
     
-    func dumpConfig(_ logger: Logger) {
-        let data = try! JSONEncoder().encode(config)
-        let val = String(data: data, encoding: .utf8)
-        appDelegate.logger.info("data: \(val!)")
+    func showConfigWindow() {
+        openWindow(id: "settings")
     }
     
     var body: some Scene {
@@ -89,9 +57,9 @@ struct RouterApp: App {
                 VStack {
                     Button("Config") { showConfigWindow() }
                         .keyboardShortcut("C")
-                    Button("Reload") { self.config = appDelegate.reloadConfig() }
+                    Button("Reload") { model.reloadConfig(appDelegate.logger) }
                         .keyboardShortcut("R")
-                    Button("Dump") { dumpConfig(appDelegate.logger) }
+                    Button("Dump") { model.dumpConfig(appDelegate.logger) }
                         .keyboardShortcut("D")
                     Divider()
                     Button("Quit") { NSApplication.shared.terminate(nil) }
@@ -99,7 +67,7 @@ struct RouterApp: App {
                 }
             }
             Window("Settings", id: "settings") {
-                SettingsView(config: $config)
+                SettingsView(config: $model.config)
             }.windowResizability(.contentSize)
         }
     }

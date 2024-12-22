@@ -45,7 +45,15 @@
 				<string>http</string>
 				<string>https</string>
 			</array>
-		</dict>
+        </dict>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>Local file URL</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>file</string>
+            </array>
+        </dict>
 	</array>
 	<key>NSUserActivityTypes</key>
 	<array>

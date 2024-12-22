@@ -29,7 +29,7 @@ class Config : Codable {
     static func loadBundledConfig(_ logger: Logger) -> Config {
         guard let url = Bundle.main.url(forResource: "config", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
-            return Self.empty()
+            return Config.empty()
         }
         
         do {
@@ -92,3 +92,64 @@ class Pattern : Codable, Identifiable {
         self.value = value
     }
 }
+
+class Model: ObservableObject {
+    var config: Config = Config.empty()
+
+    func reloadConfig(_ logger: Logger) {
+        var cfg = Config.loadUserConfig(logger)
+        if cfg.isEmpty {
+            cfg = Config.loadBundledConfig(logger)
+        }
+        self.config = cfg
+    }
+    
+    func dumpConfig(_ logger: Logger) {
+        let data = try! JSONEncoder().encode(config)
+        let val = String(data: data, encoding: .utf8)
+        logger.info("data: \(val!)")
+    }
+
+    func matchURL(_ url: URL, _ logger: Logger) -> URL {
+        for rule in config.rules {
+            for pattern in rule.patterns {
+                logger.info("pattern: \(pattern.value)")
+                let pat = try! Regex(pattern.value)
+                let strURL = url.absoluteString
+                if strURL.contains(pat) {
+                    logger.info("matched app: \(rule.app)")
+                    return URL(string: rule.app)!
+                }
+            }
+        }
+        logger.info("default app: \(self.config.default_app)")
+        return URL(string: self.config.default_app)!
+    }
+    
+    static func getApps() -> [(String, String)] {
+        var apps = [(String, String)]()
+        let fileManager = FileManager.default
+        
+        for domain in [FileManager.SearchPathDomainMask.userDomainMask,
+                       FileManager.SearchPathDomainMask.systemDomainMask,
+                       FileManager.SearchPathDomainMask.localDomainMask] {
+            if let appsURL = fileManager.urls(for: .applicationDirectory, in: domain).first {
+                if let enumerator = fileManager.enumerator(at: appsURL, includingPropertiesForKeys: nil, options: .skipsSubdirectoryDescendants) {
+                    while let element = enumerator.nextObject() as? URL {
+                        print("ep: \(element.pathComponents)")
+                        if element.pathExtension == "app" && !element.pathComponents.last!.hasPrefix(".") {
+                            let name = element.deletingPathExtension().lastPathComponent
+                            var path = element.standardizedFileURL.absoluteString
+                            path.removeLast()
+                            apps.append((name, path))
+                        }
+                    }
+                }
+            }
+        }
+        apps.sort { $0.0 < $1.0 }
+        
+        return apps
+    }
+}
+
