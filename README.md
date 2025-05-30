@@ -8,8 +8,8 @@ How to run:
 
 TODO:
 
-~~1. settings window + serialization~~
+1. ~~settings window + serialization~~
 2. (!) config in ~/.router.json
 3. goal: put in appstore
-~~4. feature: source application matching~~
+4. ~~feature: source application matching~~
 5. BUG: validate regexp
