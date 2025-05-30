@@ -24,9 +24,16 @@ class Delegate: NSObject, NSApplicationDelegate, ObservableObject, NSWindowDeleg
     }
     
     @objc func handleURL(event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
+        var appName: String? = .none
+        if let pid = event.attributeDescriptor(forKeyword: keySenderPIDAttr)?.int32Value {
+            let runningApp = NSRunningApplication(processIdentifier: pid)
+            appName = runningApp?.localizedName
+        } else {
+            logger.debug("unknown sender pid")
+        }
         if let path = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue?.removingPercentEncoding {
             let url = URL(string: path)!
-            let appURL = model!.matchURL(url)
+            let appURL = model!.match(url, appName)
             let openConf = NSWorkspace.OpenConfiguration()
             openConf.activates = true
             NSWorkspace.shared.open([url],

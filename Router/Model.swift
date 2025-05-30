@@ -5,6 +5,7 @@
 //  Created by Eugeny Volobuev on 27/11/24.
 //
 import OSLog
+import Observation
 
 @Observable
 class Config : Codable {
@@ -30,17 +31,24 @@ class Config : Codable {
 @Observable
 class Rule : Codable, Identifiable {
     var app: String
-    var patterns: [Pattern]
-    var id: String { app }
+    var urlPatterns: [Pattern]
+    var appPatterns: [Pattern]
+    var id: String {
+        app +
+        urlPatterns.map { $0.id }.joined(separator: "+") +
+        appPatterns.map { $0.id }.joined(separator: "+")
+    }
     
     enum CodingKeys: String, CodingKey {
         case _app = "app"
-        case _patterns = "patterns"
+        case _urlPatterns = "urlPatterns"
+        case _appPatterns = "appPatterns"
     }
 
-    init(app: String, patterns: [Pattern]) {
+    init(app: String, urlPatterns: [Pattern], appPatterns: [Pattern]) {
         self.app = app
-        self.patterns = patterns
+        self.urlPatterns = urlPatterns
+        self.appPatterns = appPatterns
     }
 }
 
@@ -114,17 +122,55 @@ class Model: ObservableObject {
         FileManager.default.createFile(atPath: self.configFileURL!.path(),
                                        contents: data)
     }
-        
-    func matchURL(_ url: URL) -> URL {
+    
+    func stringMatchesPattern(_ value: String, _ pattern: Pattern) -> Bool {
+        logger!.debug("value: \(value) pattern: \(pattern.value)")
+        let pat = try! Regex(pattern.value)
+        return value.contains(pat)
+    }
+    
+    func match(_ url: URL, _ app: String?) -> URL {
         for rule in config.rules {
-            for pattern in rule.patterns {
-                logger!.debug("pattern: \(pattern.value)")
-                let pat = try! Regex(pattern.value)
-                let strURL = url.absoluteString
-                if strURL.contains(pat) {
-                    logger!.debug("matched app: \(rule.app)")
-                    return URL(string: rule.app)!
+            var hasAppMatch: Bool = false
+            var hasURLMatch: Bool = false
+
+            if rule.appPatterns.count > 0 {
+                if let appName = app {
+                    for pattern in rule.appPatterns {
+                        if stringMatchesPattern(appName, pattern) {
+                            logger!.debug("app has match: \(appName) \(pattern.value)")
+                            hasAppMatch = true
+                        }
+                    }
+                } else {
+                    hasAppMatch = true
                 }
+            } else {
+                hasAppMatch = true
+            }
+            
+            if !hasAppMatch {
+                logger!.debug("no app match!")
+                continue
+            }
+            
+            if rule.urlPatterns.count > 0 {
+                let strURL = url.absoluteString
+                for pattern in rule.urlPatterns {
+                    if stringMatchesPattern(strURL, pattern) {
+                        logger!.debug("url has match: \(strURL) \(pattern.value)")
+                        hasURLMatch = true
+                    }
+                }
+            } else {
+                hasURLMatch = true
+            }
+
+            if hasAppMatch && hasURLMatch {
+                logger!.debug("HAS MATCH -> \(rule.app)")
+                return URL(string: rule.app)!
+            } else {
+                logger!.debug("no url match!")
             }
         }
         logger!.debug("default app: \(self.config.default_app)")

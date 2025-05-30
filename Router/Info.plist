@@ -59,5 +59,16 @@
 	<array>
 		<string>NSUserActivityTypeBrowsingWeb</string>
 	</array>
+    <key>OSLogPreferences</key>
+    <dict>
+      <key>jintwo.Router</key>
+      <dict>
+        <key>logging</key>
+        <dict>
+          <key>Enable-Private-Data</key>
+          <true/>
+        </dict>
+      </dict>
+    </dict>
 </dict>
 </plist>

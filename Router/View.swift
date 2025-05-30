@@ -8,8 +8,10 @@ import SwiftUI
 
 struct SettingsView: View {
     @Binding var config: Config
-    @State var newPattern: String = ""
-    @State var newPatternEditVisible: Bool = false
+    @State var newURLPattern: String = ""
+    @State var newURLPatternEditVisible: Bool = false
+    @State var newAppPattern: String = ""
+    @State var newAppPatternEditVisible: Bool = false
     @State var currentSectionID: String = ""
 
     var body: some View {
@@ -30,37 +32,67 @@ struct SettingsView: View {
                             }
                         }.bold()
                         VStack(alignment: .trailing) {
-                            ForEach(rule.patterns) {
+                            Text("URL pattern").bold().italic()
+                            ForEach(rule.urlPatterns) {
                                 pattern in HStack(alignment: .center) {
                                     Text(pattern.value).italic()
                                     Spacer()
                                     Button("Del", systemImage: "clear") {
-                                        rule.patterns = rule.patterns.filter({ $0.id != pattern.id })
+                                        rule.urlPatterns = rule.urlPatterns.filter({ $0.id != pattern.id })
                                     }
                                 }
                             }
-                            if newPatternEditVisible && currentSectionID == rule.id {
+                            if newURLPatternEditVisible && currentSectionID == rule.id {
                                 HStack {
-                                    TextField("URL", text: $newPattern)
+                                    TextField("URL", text: $newURLPattern)
                                     Spacer()
                                     Button("Save", systemImage: "lock.square") {
-                                        rule.patterns.append(Pattern(value: newPattern))
-                                        newPattern = ""
-                                        newPatternEditVisible = false
+                                        rule.urlPatterns.append(Pattern(value: newURLPattern))
+                                        newURLPattern = ""
+                                        newURLPatternEditVisible = false
                                         currentSectionID = ""
                                     }
                                 }
                             }
                             Button("Add", systemImage: "plus.app") {
-                                newPatternEditVisible = true
+                                newURLPatternEditVisible = true
                                 currentSectionID = rule.id
                             }
                         }
+                        VStack(alignment: .trailing) {
+                            Text("Source application").bold().italic()
+                            ForEach(rule.appPatterns) {
+                                pattern in HStack(alignment: .center) {
+                                    Text(pattern.value).italic()
+                                    Spacer()
+                                    Button("Del", systemImage: "clear") {
+                                        rule.appPatterns = rule.appPatterns.filter({ $0.id != pattern.id })
+                                    }
+                                }
+                            }
+                            if newAppPatternEditVisible && currentSectionID == rule.id {
+                                HStack {
+                                    TextField("App", text: $newAppPattern)
+                                    Spacer()
+                                    Button("Save", systemImage: "lock.square") {
+                                        rule.appPatterns.append(Pattern(value: newAppPattern))
+                                        newAppPattern = ""
+                                        newAppPatternEditVisible = false
+                                        currentSectionID = ""
+                                    }
+                                }
+                            }
+                            Button("Add", systemImage: "plus.app") {
+                                newAppPatternEditVisible = true
+                                currentSectionID = rule.id
+                            }
+                        }
+
                     }
                 }
             }
             Button("Add", systemImage: "plus.app") {
-                config.rules.append(Rule(app: config.default_app, patterns: []))
+                config.rules.append(Rule(app: config.default_app, urlPatterns: [], appPatterns: []))
             }
         }.padding()
     }

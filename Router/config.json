@@ -3,9 +3,13 @@
     "rules": [
         {
             "app": "file:///Applications/Firefox.app",
-            "patterns": [
+            "urlPatterns": [
                 {"value": ".*bitbucket.*"},
                 {"value": ".*google.*"}
+            ],
+            "appPatterns": [
+                {"value": ".*Mattermost.*"},
+                {"value": ".*Telegram.*"}
             ]
         }
     ]
