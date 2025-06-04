@@ -12,7 +12,7 @@ class Config : Codable {
     var default_app: String
     var rules: [Rule]
     var isEmpty: Bool { default_app.isEmpty && rules.isEmpty }
-        
+
     enum CodingKeys: String, CodingKey {
         case _default_app = "default_app"
         case _rules = "rules"
@@ -38,7 +38,7 @@ class Rule : Codable, Identifiable {
         urlPatterns.map { $0.id }.joined(separator: "+") +
         appPatterns.map { $0.id }.joined(separator: "+")
     }
-    
+
     enum CodingKeys: String, CodingKey {
         case _app = "app"
         case _urlPatterns = "urlPatterns"
@@ -56,7 +56,7 @@ class Rule : Codable, Identifiable {
 class Pattern : Codable, Identifiable {
     var value: String
     var id: String { value }
-    
+
     enum CodingKeys: String, CodingKey {
         case _value = "value"
     }
@@ -70,13 +70,13 @@ class Model: ObservableObject {
     var config: Config = Config.empty()
     var configFileURL: URL?
     var logger: Logger?
-    
+
     func loadBundledConfig() -> (Config, URL?) {
         guard let url = Bundle.main.url(forResource: "config", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
             return (Config.empty(), .none)
         }
-        
+
         do {
             return (try JSONDecoder().decode(Config.self, from: data), url)
         } catch {
@@ -84,7 +84,7 @@ class Model: ObservableObject {
             return (Config.empty(), .none)
         }
     }
-    
+
     func loadUserConfig() -> (Config, URL?) {
         let dir = try? FileManager.default.url(for: .documentDirectory,
                                                in: .userDomainMask,
@@ -92,12 +92,12 @@ class Model: ObservableObject {
                                                create: false);
         logger!.debug("trying to find config at path: \(dir!)")
         let url = dir?.appendingPathComponent("router").appendingPathExtension("json")
-        
+
         guard let data = try? Data(contentsOf: url!) else {
             logger!.debug("file at \(url!) not found")
             return (Config.empty(), .none)
         }
-        
+
         do {
             return (try JSONDecoder().decode(Config.self, from: data), url!)
         } catch {
@@ -114,7 +114,7 @@ class Model: ObservableObject {
         self.config = cfg
         self.configFileURL = url
     }
-    
+
     func dumpConfig() {
         let data = try! JSONEncoder().encode(config)
         let val = String(data: data, encoding: .utf8)
@@ -122,13 +122,13 @@ class Model: ObservableObject {
         FileManager.default.createFile(atPath: self.configFileURL!.path(),
                                        contents: data)
     }
-    
+
     func stringMatchesPattern(_ value: String, _ pattern: Pattern) -> Bool {
         logger!.debug("value: \(value) pattern: \(pattern.value)")
         let pat = try! Regex(pattern.value)
         return value.contains(pat)
     }
-    
+
     func match(_ url: URL, _ app: String?) -> URL {
         for rule in config.rules {
             var hasAppMatch: Bool = false
@@ -143,17 +143,18 @@ class Model: ObservableObject {
                         }
                     }
                 } else {
-                    hasAppMatch = true
+                    logger!.debug("unknown app")
                 }
             } else {
+                logger!.debug("no app rules")
                 hasAppMatch = true
             }
-            
+
             if !hasAppMatch {
                 logger!.debug("no app match!")
                 continue
             }
-            
+
             if rule.urlPatterns.count > 0 {
                 let strURL = url.absoluteString
                 for pattern in rule.urlPatterns {
@@ -176,11 +177,11 @@ class Model: ObservableObject {
         logger!.debug("default app: \(self.config.default_app)")
         return URL(string: self.config.default_app)!
     }
-    
+
     static func getApps() -> [(String, String)] {
         var apps = [(String, String)]()
         let fileManager = FileManager.default
-        
+
         for domain in [FileManager.SearchPathDomainMask.userDomainMask,
                        FileManager.SearchPathDomainMask.systemDomainMask,
                        FileManager.SearchPathDomainMask.localDomainMask] {
@@ -198,8 +199,7 @@ class Model: ObservableObject {
             }
         }
         apps.sort { $0.0 < $1.0 }
-        
+
         return apps
     }
 }
-
